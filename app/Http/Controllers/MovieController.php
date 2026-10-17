@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Movie;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -9,31 +10,34 @@ class MovieController extends Controller
     private function movies(): array
     {
         $path = storage_path('app/movies.json');
-
+        if (!file_exists($path)) {
+            return [];
+        }
         return json_decode(file_get_contents($path), true);
     }
 
     private function saveMovies(array $movies): void
     {
         $path = storage_path('app/movies.json');
-
-        file_put_contents(
-            $path,
-            json_encode($movies, JSON_PRETTY_PRINT)
-        );
+        file_put_contents($path, json_encode($movies, JSON_PRETTY_PRINT));
     }
 
     public function index(Request $request)
     {
-        $allMovies = $this->movies();
         $genre = $request->query('genre');
         $director = $request->query('director');
 
-        $movies = array_filter($allMovies, function ($movie) use ($genre, $director) {
-            $matchGenre = !$genre || $movie['genre'] === $genre;
-            $matchDirector = !$director || $movie['director'] === $director;
-            return $matchGenre && $matchDirector;
-        });
+        $query = Movie::query();
+
+        if ($genre) {
+            $query->where('genre', $genre);
+        }
+
+        if ($director) {
+            $query->where('director', $director);
+        }
+
+        $movies = $query->get();
 
         return view('movies.index', [
             'movies' => $movies,
@@ -51,43 +55,28 @@ class MovieController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|max:100',
-            'genre' => 'required|in:Action,Comedy,Drama,Horror,Sci-Fi,Crime',
+            'genre' => 'required|max:50',
             'director' => 'required|max:100',
+            'year' => 'required|integer',
         ]);
 
-        $movies = $this->movies();
-
-        $nextId = max(array_keys($movies)) + 1;
-
-        $movies[$nextId] = [
-            'id' => $nextId,
-            'title' => $validated['title'],
-            'genre' => $validated['genre'],
-            'director' => $validated['director'],
-        ];
-
-        $this->saveMovies($movies);
+        Movie::create($validated);
 
         return redirect()
             ->route('movies.index')
             ->with('success', 'Movie added successfully.');
     }
 
-    public function show(int $id)
+    public function show($id)
     {
-        $movies = $this->movies();
+        $movie = Movie::findOrFail($id);
 
-        if (!isset($movies[$id])) {
-            abort(404);
-        }
-
-        return view('movies.show', ['movie' => $movies[$id]]);
+        return view('movies.show', compact('movie'));
     }
 
     public function featured()
     {
-        $movies = $this->movies();
-        $movie = $movies[1] ?? reset($movies);
+        $movie = Movie::where('is_featured', true)->first() ?? Movie::first();
 
         return view('movies.show', ['movie' => $movie]);
     }

@@ -14,7 +14,6 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h1 class="text-primary fw-bold mb-0">Movie Vault Portal - INHERITANCE TEST</h1>
                     <p class="text-muted mb-0">Prepared by: Sean Patrick T. Buenafe | Block 4C</p>
                 </div>
                 <a href="{{ route('movies.featured') }}" class="btn btn-primary">View featured</a>

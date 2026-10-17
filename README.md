@@ -1,10 +1,10 @@
-# Lab Activity 7 Answers
+### Part F
 
-### Q1. Why does the form use POST instead of GET?
-The form uses POST because we are creating and adding new movie data. Using GET would show all input values in the URL bar, and refreshing the page could submit the form again and duplicate the movie. POST combined with a redirect prevents duplicate submissions.
+**Which column did you make nullable, and why that one and not another?**
+I made the `is_featured` column nullable because a movie might not always be marked as featured right away. The primary columns like `title`, `genre`, `director`, and `year` are required because every movie record needs basic identifying information.
 
-### Q2. What stops the saving code when validation fails?
-The `$request->validate()` method stops the execution if any validation rule fails. Laravel automatically throws a validation exception, cancels the rest of the method before saving, and redirects back to the form with the error messages and previous inputs.
+**Which step failed first for you, and what did the error say?**
+The first error I encountered was while running `php artisan migrate:status`, which gave an error regarding the PHP `intl` extension being missing or not enabled. I fixed it by opening the `php.ini` configuration file, uncommenting `extension=intl`, saving it, and running the migration status command again.
 
-### Q3. Why does the success message not appear on every page?
-Because it uses Laravel's `with('success', ...)` flash data. Flash data is temporary and only exists in the session for the very next HTTP request. Once the page is refreshed or visited again, Laravel automatically clears it so the alert box goes away.
+**You changed no Blade file in Part D, yet your pages still work. Why not?**
+The pages still work because Laravel strictly follows the Model-View-Controller (MVC) architecture. I only updated the controller layer to pull data from the SQLite database using the Eloquent `Movie` model instead of reading from the JSON file. Since the controller continues to pass the expected `$movies` variable to the Blade view, the template renders the data seamlessly without needing any code changes.
