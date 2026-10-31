@@ -45,7 +45,6 @@
                 </div>
             </div>
 
-            {{-- Added the Add movie button & clear filters here --}}
             <div class="mb-3">
                 <a href="{{ route('movies.create') }}" class="btn btn-success">Add movie</a>
                 <a href="{{ route('movies.index') }}" class="btn btn-outline-secondary">Clear both filters</a>
@@ -58,6 +57,7 @@
                         <th>ID</th>
                         <th>Movie Title</th>
                         <th>Genre</th>
+                        <th>Year</th>
                         <th>Director</th>
                     </tr>
                 </thead>
@@ -65,22 +65,26 @@
                     @forelse ($movies as $movie)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $movie['id'] }}</td>
+                            <td>{{ $movie->id }}</td>
                             <td>
-                                <a href="{{ route('movies.show', $movie['id']) }}" class="text-decoration-none fw-semibold">
-                                    {{ $movie['title'] }}
+                                <a href="{{ route('movies.show', $movie->id) }}" class="text-decoration-none fw-semibold">
+                                    {{ $movie->title }}
                                 </a>
                             </td>
-                            <td><span class="badge bg-info text-dark">{{ $movie['genre'] }}</span></td>
-                            <td>{{ $movie['director'] }}</td>
+                            <td><span class="badge bg-info text-dark">{{ $movie->genre->name ?? 'N/A' }}</span></td>
+                            <td>{{ $movie->year }}</td>
+                            <td>{{ $movie->director }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted">No movies found.</td>
+                            <td colspan="6" class="text-center text-muted">No movies found.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+
+    {{-- Query Count Display at the Bottom --}}
+    <p class="mt-3 text-muted">Queries: {{ $queryCount ?? 0 }}</p>
 @endsection

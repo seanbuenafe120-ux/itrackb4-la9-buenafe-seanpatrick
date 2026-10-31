@@ -23,16 +23,16 @@
             </div>
 
             <div class="mb-3">
-                <label for="genre" class="form-label">Genre</label>
-                <select class="form-select @error('genre') is-invalid @enderror" name="genre" id="genre">
+                <label for="genre_id" class="form-label">Genre</label>
+                <select class="form-select @error('genre_id') is-invalid @enderror" name="genre_id" id="genre_id">
                     <option value="">Choose a genre</option>
-                    @foreach (['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Crime'] as $genreOption)
-                        <option value="{{ $genreOption }}" @selected(old('genre') == $genreOption)>
-                            {{ $genreOption }}
+                    @foreach ($genres as $genre)
+                        <option value="{{ $genre->id }}" @selected(old('genre_id') == $genre->id)>
+                            {{ $genre->name }}
                         </option>
                     @endforeach
                 </select>
-                @error('genre')
+                @error('genre_id')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
@@ -43,6 +43,19 @@
                 @error('director')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
+            </div>
+
+            <div class="mb-3">
+                <label for="year" class="form-label">Year</label>
+                <input type="number" class="form-control @error('year') is-invalid @enderror" name="year" id="year" value="{{ old('year') }}">
+                @error('year')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" name="is_featured" id="is_featured" value="1" {{ old('is_featured') ? 'checked' : '' }}>
+                <label class="form-check-label" for="is_featured">Featured Movie</label>
             </div>
 
             <button type="submit" class="btn btn-primary">Save Movie</button>

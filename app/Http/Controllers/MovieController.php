@@ -3,81 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
+use App\Models\Genre;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MovieController extends Controller
 {
-    private function movies(): array
-    {
-        $path = storage_path('app/movies.json');
-        if (!file_exists($path)) {
-            return [];
-        }
-        return json_decode(file_get_contents($path), true);
-    }
-
-    private function saveMovies(array $movies): void
-    {
-        $path = storage_path('app/movies.json');
-        file_put_contents($path, json_encode($movies, JSON_PRETTY_PRINT));
-    }
-
     public function index(Request $request)
     {
-        $genre = $request->query('genre');
-        $director = $request->query('director');
+        DB::enableQueryLog();
 
-        $query = Movie::query();
+        $selectedGenre = $request->query('genre');
+        $selectedDirector = $request->query('director');
 
-        if ($genre) {
-            $query->where('genre', $genre);
+        $query = Movie::with('genre');
+
+        if ($selectedGenre) {
+            $query->whereHas('genre', function ($q) use ($selectedGenre) {
+                $q->where('name', $selectedGenre);
+            });
         }
 
-        if ($director) {
-            $query->where('director', $director);
+        if ($selectedDirector) {
+            $query->where('director', $selectedDirector);
         }
 
         $movies = $query->get();
 
-        return view('movies.index', [
-            'movies' => $movies,
-            'selectedGenre' => $genre,
-            'selectedDirector' => $director,
-        ]);
+        $genres = Genre::all();
+
+        $queryCount = count(DB::getQueryLog());
+
+        return view('movies.index', compact('movies', 'selectedGenre', 'selectedDirector', 'genres', 'queryCount'));
     }
 
     public function create()
     {
-        return view('movies.create');
+        $genres = Genre::all();
+        return view('movies.create', compact('genres'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|max:100',
-            'genre' => 'required|max:50',
-            'director' => 'required|max:100',
-            'year' => 'required|integer',
+            'title'       => 'required|string|max:255',
+            'genre_id'    => 'required|exists:genres,id',
+            'director'    => 'required|string|max:255',
+            'year'        => 'required|integer',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         Movie::create($validated);
 
-        return redirect()
-            ->route('movies.index')
-            ->with('success', 'Movie added successfully.');
-    }
-
-    public function show($id)
-    {
-        $movie = Movie::findOrFail($id);
-
-        return view('movies.show', compact('movie'));
-    }
-
-    public function featured()
-    {
-        $movie = Movie::where('is_featured', true)->first() ?? Movie::first();
-
-        return view('movies.show', ['movie' => $movie]);
+        return redirect()->route('movies.index')->with('success', 'Movie added successfully!');
     }
 }
